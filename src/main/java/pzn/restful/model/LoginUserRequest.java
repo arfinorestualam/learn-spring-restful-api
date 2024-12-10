@@ -7,25 +7,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//why we're not using entity as model, cause variable in entity sometime isn't use
-//so need a request class, to get variable is absolutely use from entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
-public class RegisterUserRequest {
+@Builder
+public class LoginUserRequest {
 
     @NotBlank
-    //using size to validation that maximum word is 100 (context using varchar)
     @Size(max = 100)
     private String username;
 
     @NotBlank
     @Size(max = 100)
     private String password;
-
-    @NotBlank
-    @Size(max = 100)
-    private String name;
-
 }
