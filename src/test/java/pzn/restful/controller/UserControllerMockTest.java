@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import pzn.restful.entity.User;
 import pzn.restful.model.RegisterUserRequest;
+import pzn.restful.model.UpdateUserRequest;
 import pzn.restful.model.UserResponse;
 import pzn.restful.model.WebResponse;
 import pzn.restful.repository.UserRepository;
@@ -189,6 +190,66 @@ class UserControllerMockTest {
             WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
 
             Assertions.assertNotNull( response.getErrors());
+        });
+    }
+
+    //to test update user unauthorized
+    @Test
+    void updateUserUnauthorized() throws Exception {
+        UpdateUserRequest request = new UpdateUserRequest();
+
+        mockMvc.perform(
+                patch("/api/users/current")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+
+        ).andExpectAll(
+                status().isUnauthorized()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+            Assertions.assertNotNull( response.getErrors());
+        });
+    }
+
+    //to test update user success
+    @Test
+    void updateUserSuccess() throws Exception {
+        //set user before test
+        User user = new User();
+        user.setUsername("test");
+        user.setName("test");
+        user.setPassword(BCrypt.hashpw("test",BCrypt.gensalt()));
+        user.setToken("test");
+        user.setTokenExpiredAt(System.currentTimeMillis() + 100000000000L);
+        userRepository.save(user);
+
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setName("bro");
+        request.setPassword("1112");
+
+        mockMvc.perform(
+                patch("/api/users/current")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test")
+
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<UserResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+            Assertions.assertNull( response.getErrors());
+            Assertions.assertEquals("bro", response.getData().getName());
+            Assertions.assertEquals("test", response.getData().getUsername());
+
+            //check password change or not
+            User userDb = userRepository.findById("test").orElse(null);
+            Assertions.assertNotNull(userDb);
+
+            Assertions.assertTrue(BCrypt.checkpw("1112", userDb.getPassword()));
         });
     }
 
