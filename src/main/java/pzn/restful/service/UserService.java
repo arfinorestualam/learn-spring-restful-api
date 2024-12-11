@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import pzn.restful.entity.User;
 import pzn.restful.model.RegisterUserRequest;
+import pzn.restful.model.UserResponse;
 import pzn.restful.repository.UserRepository;
 import pzn.restful.security.BCrypt;
 
@@ -39,4 +40,15 @@ public class UserService {
         user.setName(registerUserRequest.getName());
 
     }
+
+    //cause there is no username, so we can get username from the Token
+    //cause the token logic is use in everywhere, there is two ways Interceptor or Argument Resolver
+    //but the tutor decide use Argument Resolver
+    public UserResponse get(User user) {
+        return UserResponse.builder()
+                .username(user.getUsername())
+                .name(user.getName())
+                .build();
+    }
+
 }
