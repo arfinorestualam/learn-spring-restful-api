@@ -8,9 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import pzn.restful.entity.User;
 import pzn.restful.model.RegisterUserRequest;
+import pzn.restful.model.UpdateUserRequest;
 import pzn.restful.model.UserResponse;
 import pzn.restful.repository.UserRepository;
 import pzn.restful.security.BCrypt;
+
+import java.util.Objects;
 
 
 @Service
@@ -48,6 +51,32 @@ public class UserService {
         return UserResponse.builder()
                 .username(user.getUsername())
                 .name(user.getName())
+                .build();
+    }
+
+    @Transactional
+    public UserResponse update(User user, UpdateUserRequest request) {
+        //to validate, request is not empty all
+        validationService.validate(request);
+
+        //check if name is not null
+        if (Objects.nonNull(request.getName())) {
+            //update name
+           user.setName(request.getName());
+        }
+
+        //check if password not null
+        if (Objects.nonNull(request.getPassword())) {
+            //update password
+            user.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
+        }
+
+        //save to db
+        userRepository.save(user);
+
+        return UserResponse.builder()
+                .name(user.getName())
+                .username(user.getUsername())
                 .build();
     }
 
