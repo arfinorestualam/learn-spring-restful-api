@@ -54,6 +54,7 @@ public class UserService {
                 .build();
     }
 
+    //update user
     @Transactional
     public UserResponse update(User user, UpdateUserRequest request) {
         //to validate, request is not empty all
@@ -79,5 +80,4 @@ public class UserService {
                 .username(user.getUsername())
                 .build();
     }
-
 }
