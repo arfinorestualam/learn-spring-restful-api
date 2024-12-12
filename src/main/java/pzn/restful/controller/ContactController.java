@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import pzn.restful.entity.User;
 import pzn.restful.model.ContactResponse;
 import pzn.restful.model.CreateContactRequest;
+import pzn.restful.model.UpdateContactRequest;
 import pzn.restful.model.WebResponse;
 import pzn.restful.service.ContactService;
 
@@ -31,6 +32,21 @@ public class ContactController {
     )
     public WebResponse<ContactResponse> getById(User user, @PathVariable("contactId") String  contactId) {
         ContactResponse contactResponse = contactService.get(user, contactId);
+        return WebResponse.<ContactResponse>builder().data(contactResponse).build();
+    }
+
+    @PutMapping(
+            path = "/api/contacts/{contactId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public WebResponse<ContactResponse> update(User user,
+                                               @RequestBody UpdateContactRequest request,
+                                               @PathVariable("contactId") String  contactId) {
+        //we do some trick so user didn't send id in request body, ignore in UpdateContactRequest,
+        //and this :
+        request.setId(contactId);
+        ContactResponse contactResponse = contactService.update(user, request);
         return WebResponse.<ContactResponse>builder().data(contactResponse).build();
     }
 }

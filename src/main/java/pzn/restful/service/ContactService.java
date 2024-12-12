@@ -9,6 +9,7 @@ import pzn.restful.entity.Contact;
 import pzn.restful.entity.User;
 import pzn.restful.model.ContactResponse;
 import pzn.restful.model.CreateContactRequest;
+import pzn.restful.model.UpdateContactRequest;
 import pzn.restful.repository.ContactRepository;
 
 import java.util.UUID;
@@ -44,6 +45,23 @@ public class ContactService {
     public ContactResponse get(User user, String id) {
         Contact contact = contactRepository.findFirstByUserAndId(user, id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        return toContactResponse(contact);
+    }
+
+    //update contact
+    @Transactional
+    public ContactResponse update(User user, UpdateContactRequest request) {
+        validationService.validate(request);
+
+        Contact contact = contactRepository.findFirstByUserAndId(user, request.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        contact.setFirstName(request.getFirstName());
+        contact.setLastName(request.getLastName());
+        contact.setEmail(request.getEmail());
+        contact.setPhone(request.getPhone());
+        contactRepository.save(contact);
 
         return toContactResponse(contact);
     }
