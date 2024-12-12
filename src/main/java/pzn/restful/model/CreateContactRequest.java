@@ -22,9 +22,9 @@ public class CreateContactRequest {
     private String lastName;
 
     @Size(max = 100)
-    @Email
     private String phone;
 
     @Size(max = 100)
+    @Email
     private String email;
 }
