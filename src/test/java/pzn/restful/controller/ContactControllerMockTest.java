@@ -14,6 +14,7 @@ import pzn.restful.entity.Contact;
 import pzn.restful.entity.User;
 import pzn.restful.model.ContactResponse;
 import pzn.restful.model.CreateContactRequest;
+import pzn.restful.model.UpdateContactRequest;
 import pzn.restful.model.WebResponse;
 import pzn.restful.repository.ContactRepository;
 import pzn.restful.repository.UserRepository;
@@ -161,6 +162,70 @@ class ContactControllerMockTest {
             assertEquals(contact.getPhone(), response.getData().getPhone());
             assertEquals(contact.getEmail(), response.getData().getEmail());
 
+        });
+    }
+
+    //update contact not valid
+    @Test
+    void updateContactBadRequest() throws Exception {
+        UpdateContactRequest request = new UpdateContactRequest();
+        request.setFirstName("");
+        request.setEmail("salah");
+
+        mockMvc.perform(
+                put("/api/contacts/212121")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test")
+        ).andExpectAll(
+                status().isBadRequest()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+            Assertions.assertNotNull( response.getErrors());
+        });
+    }
+
+    //update contact success
+    @Test
+    void updateContactSuccess() throws Exception {
+        User user = userRepository.findById("test").orElseThrow();
+
+        Contact contact = new Contact();
+        contact.setId(UUID.randomUUID().toString());
+        contact.setUser(user);
+        contact.setFirstName("test");
+        contact.setLastName("bubi");
+        contact.setPhone("1212121");
+        contact.setEmail("salah@example.com");
+        contactRepository.save(contact);
+
+        CreateContactRequest request = new CreateContactRequest();
+        request.setFirstName("kul");
+        request.setLastName("dum");
+        request.setPhone("1234");
+        request.setEmail("betul@example.com");
+
+        mockMvc.perform(
+                put("/api/contacts/" + contact.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test")
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<ContactResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+            assertNull( response.getErrors());
+            assertEquals(request.getFirstName(), response.getData().getFirstName());
+            assertEquals(request.getLastName(), response.getData().getLastName());
+            assertEquals(request.getPhone(), response.getData().getPhone());
+            assertEquals(request.getEmail(), response.getData().getEmail());
+
+            //check if data exist
+            assertTrue(contactRepository.existsById(response.getData().getId()));
         });
     }
 }
