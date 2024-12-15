@@ -14,6 +14,7 @@ import pzn.restful.entity.Contact;
 import pzn.restful.entity.User;
 import pzn.restful.model.AddressResponse;
 import pzn.restful.model.CreateAddressRequest;
+import pzn.restful.model.UpdateAddressRequest;
 import pzn.restful.model.WebResponse;
 import pzn.restful.repository.AddressRepository;
 import pzn.restful.repository.ContactRepository;
@@ -173,6 +174,71 @@ class AddressControllerMockTest {
             assertEquals(address.getProvince(), response.getData().getProvince());
             assertEquals(address.getCountry(), response.getData().getCountry());
             assertEquals(address.getPostalCode(), response.getData().getPostalCode());
+        });
+    }
+
+    //update address bad request
+    @Test
+    void updateAddressBadRequest() throws Exception {
+        UpdateAddressRequest request = new UpdateAddressRequest();
+        request.setCountry("");
+
+        mockMvc.perform(
+                put("/api/contacts/test/addresses/test")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test")
+        ).andExpectAll(
+                status().isBadRequest()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+            assertNotNull( response.getErrors());
+        });
+    }
+
+    //update address success
+    @Test
+    void updateAddressSuccess() throws Exception {
+        Contact contact = contactRepository.findById("test").orElseThrow();
+
+        Address address = new Address();
+        address.setContact(contact);
+        address.setId("test");
+        address.setStreet("test");
+        address.setCity("test");
+        address.setProvince("test");
+        address.setCountry("in");
+        address.setPostalCode("test");
+        addressRepository.save(address);
+
+        UpdateAddressRequest request = new UpdateAddressRequest();
+        request.setStreet("jln");
+        request.setCity("cit");
+        request.setProvince("pro");
+        request.setCountry("ina");
+        request.setPostalCode("1234");
+
+        mockMvc.perform(
+                put("/api/contacts/test/addresses/test")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test")
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<AddressResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+            assertNull( response.getErrors());
+            assertEquals(request.getStreet(), response.getData().getStreet());
+            assertEquals(request.getCity(), response.getData().getCity());
+            assertEquals(request.getProvince(), response.getData().getProvince());
+            assertEquals(request.getCountry(), response.getData().getCountry());
+            assertEquals(request.getPostalCode(), response.getData().getPostalCode());
+
+            assertTrue(addressRepository.existsById(response.getData().getId()));
         });
     }
 }
