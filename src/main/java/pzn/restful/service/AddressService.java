@@ -14,6 +14,7 @@ import pzn.restful.model.UpdateAddressRequest;
 import pzn.restful.repository.AddressRepository;
 import pzn.restful.repository.ContactRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -96,6 +97,17 @@ public class AddressService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found"));
 
         addressRepository.delete(address);
+    }
+
+    //list address
+    @Transactional(readOnly = true)
+    public List<AddressResponse> list(User user, String contactId) {
+        //search user
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        List<Address> addresses = addressRepository.findAllByContact(contact);
+        return addresses.stream().map(this::toAddressResponse).toList();
     }
 
     private AddressResponse toAddressResponse(Address address) {
