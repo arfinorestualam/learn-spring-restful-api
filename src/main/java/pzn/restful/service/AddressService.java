@@ -85,6 +85,19 @@ public class AddressService {
         return toAddressResponse(address);
     }
 
+    //delete Address
+    @Transactional
+    public void delete(User user,String contactId, String addressId) {
+        //search user
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+        //search address
+        Address address = addressRepository.findFirstByContactAndId(contact, addressId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found"));
+
+        addressRepository.delete(address);
+    }
+
     private AddressResponse toAddressResponse(Address address) {
         return AddressResponse.builder()
                 .id(address.getId())
