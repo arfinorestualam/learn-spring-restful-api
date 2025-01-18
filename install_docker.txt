@@ -1,0 +1,17 @@
+1. Download docker dmg in docker site : docker for apple chip
+2. Open the docker, sign up for personal / work. I use sign up with my github account
+3. See the docker logo on your bar to know that the docker run
+4. setting portainer :
+    - run your terminal
+    - you can type this :
+        + "docker volume create portainer_data" -> so docker can save portainer's data
+        + "docker run -d -p 8000:8000 -p 9443:9443 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latestdocker" run -d -p 8000:8000 -p 9443:9443 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest"
+         -> this is the setting for portainer.
+    - after that you can setting your user and password using this site : "https://localhost:9443", don't worry if you get warn, just accept, and jump to site
+    - if you forget your password (like me, lol) you can type in your terminal like this :
+        + "docker stop portainer" -> to stop portainer running on docker
+        + "docker volume rm portainer_data" -> to delete all portainer data
+        + run this again : "docker run -d -p 8000:8000 -p 9443:9443 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latestdocker"
+    - after that you can run this site : "https://localhost:9443", and create new password again.
+
+
